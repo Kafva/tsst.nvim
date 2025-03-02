@@ -106,6 +106,20 @@ function M.assert_eql(expected, actual)
     error(msg)
 end
 
+---@param expected any[]
+---@param actual any[]
+function M.assert_eql_tables(expected, actual)
+    for i,_ in ipairs(expected) do
+        if expected[i] ~= actual[i] then
+            local msg = failed_message()
+            msg = msg .. string.format('Difference at index %d\n', i)
+            msg = msg .. string.format('Expected: %s\n', tostring(expected[i]))
+            msg = msg .. string.format('Actual: %s\n', tostring(actual[i]))
+            error(msg)
+        end
+    end
+end
+
 ---@param expected_file string
 ---@param actual string[]
 function M.assert_eql_file(expected_file, actual)
