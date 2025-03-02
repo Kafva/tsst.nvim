@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -e
+
+die() { printf "$1\n" >&2 && exit 1; }
+
+usage() {
+    cat << EOF >&2
+Usage: $(basename $0) [OPTIONS] [test modules]
+
+OPTIONS:
+    -d       Debug tests
+    -h       Show this help message
+EOF
+    exit 1
+}
+
+CURDIR=$(cd "$(dirname $0)" && pwd)
+DEBUG=false
+
+while getopts ":d" opt; do
+    case $opt in
+    d) DEBUG=true ;;
+    *) usage ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+################################################################################
+
+# Setup clean environment for tests
+rm -rf .testenv
+mkdir -p .testenv/{state,run,data,config,cache}/nvim
+
+export XDG_CONFIG_HOME=".testenv/config"
+export XDG_DATA_HOME=".testenv/data"
+export XDG_STATE_HOME=".testenv/state"
+export XDG_RUNTIME_DIR=".testenv/run"
+export XDG_CACHE_HOME=".testenv/cache"
+export HOME="$XDG_CONFIG_HOME"
+
+# Make sure test modules can use `require('tsst')` to access utility functions
+export LUA_PATH="$CURDIR/lua/?.lua;;"
+
+if $DEBUG; then
+    curl -sOL https://raw.githubusercontent.com/kafva/debugger.lua/master/debugger.lua
+    nvim --headless --noplugin -u $CURDIR/lua/tsst.lua -c "RunTests $*"
+else
+    nvim -es --headless --noplugin -u $CURDIR/lua/tsst.lua -c "RunTests $*"
+fi
