@@ -1,5 +1,5 @@
 # tsst.nvim
-Basic framework for nvim plugin tests.
+Basic framework for testing Neovim plugins.
 
 Projects that use tsst should define test modules under `./tests/` and have a
 copy of tsst.nvim in the same directory, e.g.
