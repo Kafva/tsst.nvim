@@ -40,7 +40,7 @@ export XDG_CACHE_HOME=".testenv/cache"
 export HOME="$XDG_CONFIG_HOME"
 
 # Make sure test modules can use `require('tsst')` to access utility functions
-export LUA_PATH="$CURDIR/lua/?.lua;;"
+export LUA_PATH="$LUA_PATH;;$CURDIR/lua/?.lua;;"
 
 if $DEBUG; then
     curl -sOL https://raw.githubusercontent.com/kafva/debugger.lua/master/debugger.lua

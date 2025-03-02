@@ -30,9 +30,14 @@ table.insert(M.testcases, {
 })
 ```
 
-To run the tests:
+To run all tests:
 ```bash
 tests/tsst.nvim/tsst
+```
+
+To run a specific module and debug failures:
+```bash
+tests/tsst.nvim/tsst -d tests/foo_test.lua
 ```
 
 See [brk.nvim](https://github.com/Kafva/brk.nvim) for more in depth examples.

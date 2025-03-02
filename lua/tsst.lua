@@ -21,7 +21,6 @@ local function failed_message(msg)
         .. '\n'
 end
 
-
 ---@return boolean
 function M.run_test(testfile)
     local modpath = testfile:gsub('/', '.'):gsub('.lua$', '')
@@ -62,6 +61,32 @@ vim.api.nvim_create_user_command('RunTests', function(opts)
 end, { nargs = 1 })
 
 -- Test utilities --------------------------------------------------------------
+
+---@param filepath string
+---@return string
+local function readfile(filepath)
+    local content
+    local fd, err
+    fd, err = vim.uv.fs_open(filepath, 'r', 438)
+
+    if not fd then
+        error(err or ('Failed to open ' .. filepath))
+    end
+
+    content, err = vim.uv.fs_read(fd, 8192)
+
+    if not content then
+        error(err or ('Failed to read ' .. filepath))
+    end
+
+    _, err = vim.uv.fs_close(fd)
+    if err then
+        error(err)
+    end
+
+    return content
+end
+
 function M.rm_f(filepath)
     local _, err, errno = vim.uv.fs_unlink(filepath)
     if errno ~= nil and errno ~= 'ENOENT' then
@@ -69,16 +94,31 @@ function M.rm_f(filepath)
     end
 end
 
----@param got any
 ---@param expected any
-function M.assert_eq(got, expected)
-    if got == expected then
+---@param actual any
+function M.assert_eql(expected, actual)
+    if actual == expected then
         return
     end
     local msg = failed_message()
-    msg = msg .. 'Expected: ' .. tostring(expected) .. '\n'
-    msg = msg .. 'Got: ' .. tostring(got) .. '\n'
+    msg = msg .. string.format('Expected: %s\n', tostring(expected))
+    msg = msg .. string.format('Actual: %s\n', tostring(actual))
     error(msg)
+end
+
+---@param expected_file string
+---@param actual string[]
+function M.assert_eql_file(expected_file, actual)
+    local expected = vim.split(readfile(expected_file), '\n', {trimempty = true})
+    for i,_ in ipairs(expected) do
+        if expected[i] ~= actual[i] then
+            local msg = failed_message()
+            msg = msg .. string.format('Difference at %s:%d\n', expected_file, i)
+            msg = msg .. string.format('Expected: %s\n', tostring(expected[i]))
+            msg = msg .. string.format('Actual: %s\n', tostring(actual[i]))
+            error(msg)
+        end
+    end
 end
 
 return M
