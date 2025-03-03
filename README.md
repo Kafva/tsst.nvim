@@ -28,6 +28,8 @@ table.insert(M.testcases, {
         -- ...
     end,
 })
+
+return M
 ```
 
 To run all tests:
