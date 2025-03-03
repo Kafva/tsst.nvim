@@ -30,7 +30,8 @@ function M.run_test(testfile)
         io.flush()
         return false
     end
-    io.write('=== Module: ' .. modpath .. '\n')
+    local modname = modpath:gsub("tests.", '')
+    io.write(string.format("\x1b[94m(%s)\x1b[0m\n", modname))
 
     for _, tc in pairs(testmod.testcases) do
         testmod.before_each()
