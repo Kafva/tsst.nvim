@@ -31,7 +31,7 @@ function M.run_test(testfile)
         return false
     end
     local modname = modpath:gsub("tests.", '')
-    io.write(string.format("\x1b[94m(%s)\x1b[0m\n", modname))
+    io.write(string.format("\x1b[3m>>> %s\x1b[0m\n", modname))
 
     for _, tc in pairs(testmod.testcases) do
         testmod.before_each()
