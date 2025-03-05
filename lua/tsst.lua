@@ -102,8 +102,8 @@ function M.assert_eql(expected, actual)
         return
     end
     local msg = failed_message()
-    msg = msg .. string.format('Expected: %s\n', tostring(expected))
-    msg = msg .. string.format('Actual: %s\n', tostring(actual))
+    msg = msg .. string.format("Expected: '%s'\n", tostring(expected))
+    msg = msg .. string.format("Actual:   '%s'\n", tostring(actual))
     error(msg)
 end
 
@@ -114,8 +114,8 @@ function M.assert_eql_tables(expected, actual)
         if expected[i] ~= actual[i] then
             local msg = failed_message()
             msg = msg .. string.format('Difference at index %d\n', i)
-            msg = msg .. string.format('Expected: %s\n', tostring(expected[i]))
-            msg = msg .. string.format('Actual: %s\n', tostring(actual[i]))
+            msg = msg .. string.format("Expected: '%s'\n", tostring(expected[i]))
+            msg = msg .. string.format("Actual:   '%s'\n", tostring(actual[i]))
             error(msg)
         end
     end
@@ -129,8 +129,8 @@ function M.assert_eql_file(expected_file, actual)
         if expected[i] ~= actual[i] then
             local msg = failed_message()
             msg = msg .. string.format('Difference at %s:%d\n', expected_file, i)
-            msg = msg .. string.format('Expected: %s\n', tostring(expected[i]))
-            msg = msg .. string.format('Actual: %s\n', tostring(actual[i]))
+            msg = msg .. string.format("Expected: '%s'\n", tostring(expected[i]))
+            msg = msg .. string.format("Actual:   '%s'\n", tostring(actual[i]))
             error(msg)
         end
     end
