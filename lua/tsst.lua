@@ -3,9 +3,11 @@ local M = {}
 -- Test modules should be imported from '.'
 vim.o.runtimepath = vim.o.runtimepath .. ',.'
 
-local COLOR_RED = string.char(27) .. '[91m'
-local COLOR_GREEN = string.char(27) .. '[32m'
-local COLOR_RESET = string.char(27) .. '[0m'
+local ANSI_RED = string.char(27) .. '[91m'
+local ANSI_RED_BG = string.char(27) .. '[101m'
+local ANSI_GREEN = string.char(27) .. '[32m'
+local ANSI_ITALICS = string.char(27) .. '[3m'
+local ANSI_RESET = string.char(27) .. '[0m'
 
 ---@param msg string|nil
 local function failed_message(msg)
@@ -31,13 +33,13 @@ function M.run_test(testfile)
         return false
     end
     local modname = modpath:gsub("tests.", '')
-    io.write(string.format("\x1b[3m>>> %s\x1b[0m\n", modname))
+    io.write(string.format(ANSI_ITALICS .. ">>> %s" .. ANSI_RESET .. "\n", modname))
 
     for _, tc in pairs(testmod.testcases) do
         testmod.before_each()
         local testcase_ok, errmsg = pcall(tc.fn)
-        local status = testcase_ok and (COLOR_GREEN .. ' OK ' .. COLOR_RESET)
-            or (COLOR_RED .. 'FAIL' .. COLOR_RESET)
+        local status = testcase_ok and (ANSI_GREEN .. ' OK ' .. ANSI_RESET)
+            or (ANSI_RED .. 'FAIL' .. ANSI_RESET)
         io.write(string.format("[ %s ] %s\n", status, tc.desc))
         io.flush()
 
@@ -88,6 +90,26 @@ local function readfile(filepath)
     return content
 end
 
+---@param expected any
+---@param actual any
+---@return string
+local function colordiff(expected, actual)
+    local expected_s = tostring(expected)
+    local actual_s = tostring(actual)
+    msg = "Expected:\n  " .. expected_s .. "\n"
+    msg = msg .. "Actual:\n  "
+    for i = 1, #expected_s do
+        if i > #actual_s then
+            msg = msg .. ANSI_RED_BG .. " " .. ANSI_RESET
+        elseif expected_s:sub(i, i) ~= actual_s:sub(i, i) then
+            msg = msg .. ANSI_RED .. actual_s:sub(i,i) .. ANSI_RESET
+        else
+            msg = msg .. actual_s:sub(i, i)
+        end
+    end
+    return msg .. "\n"
+end
+
 function M.rm_f(filepath)
     local _, err, errno = vim.uv.fs_unlink(filepath)
     if errno ~= nil and errno ~= 'ENOENT' then
@@ -98,12 +120,11 @@ end
 ---@param expected any
 ---@param actual any
 function M.assert_eql(expected, actual)
-    if actual == expected then
+    if expected == actual then
         return
     end
     local msg = failed_message()
-    msg = msg .. string.format("Expected: '%s'\n", tostring(expected))
-    msg = msg .. string.format("Actual:   '%s'\n", tostring(actual))
+    msg = msg .. colordiff(expected, actual)
     error(msg)
 end
 
@@ -114,8 +135,7 @@ function M.assert_eql_tables(expected, actual)
         if expected[i] ~= actual[i] then
             local msg = failed_message()
             msg = msg .. string.format('Difference at index %d\n', i)
-            msg = msg .. string.format("Expected: '%s'\n", tostring(expected[i]))
-            msg = msg .. string.format("Actual:   '%s'\n", tostring(actual[i]))
+            msg = msg .. colordiff(expected[i], actual[i])
             error(msg)
         end
     end
@@ -129,8 +149,7 @@ function M.assert_eql_file(expected_file, actual)
         if expected[i] ~= actual[i] then
             local msg = failed_message()
             msg = msg .. string.format('Difference at %s:%d\n', expected_file, i)
-            msg = msg .. string.format("Expected: '%s'\n", tostring(expected[i]))
-            msg = msg .. string.format("Actual:   '%s'\n", tostring(actual[i]))
+            msg = msg .. colordiff(expected[i], actual[i])
             error(msg)
         end
     end
