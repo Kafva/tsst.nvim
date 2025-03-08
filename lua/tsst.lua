@@ -53,15 +53,14 @@ end
 ---@return string
 local function string_color_diff(toprint, tocompare)
     local msg = ''
-    for i = 1, #tocompare do
+    local len = math.max(#tocompare, #toprint)
+    for i = 1, len do
         if i > #toprint then
-            -- rhs string is longer than lhs
-            msg = msg .. ANSI_RED_BG .. " " .. ANSI_RESET
             goto continue
         end
 
         local char = toprint:sub(i, i)
-        if char ~= tocompare:sub(i, i) then
+        if i <= #tocompare and char ~= tocompare:sub(i, i) then
             if char == ' ' then
                 msg = msg .. ANSI_RED_BG .. char .. ANSI_RESET
             else
