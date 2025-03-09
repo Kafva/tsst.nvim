@@ -81,8 +81,12 @@ end
 local function getdiff(expected, actual)
     local expected_s = tostring(expected)
     local actual_s = tostring(actual)
-    return "Expected:  " .. string_color_diff(expected_s, actual_s) .. "\n" ..
-           "Actual:    " .. string_color_diff(actual_s, expected_s) .. "\n"
+    return 'Expected:  '
+        .. string_color_diff(expected_s, actual_s)
+        .. '\n'
+        .. 'Actual:    '
+        .. string_color_diff(actual_s, expected_s)
+        .. '\n'
 end
 
 ---@return integer?
@@ -94,15 +98,17 @@ function M.run_test(testfile)
         io.flush()
         return nil
     end
-    local modname = modpath:gsub("tests.", '')
-    io.write(string.format(ANSI_ITALICS .. ">>> %s" .. ANSI_RESET .. "\n", modname))
+    local modname = modpath:gsub('tests.', '')
+    io.write(
+        string.format(ANSI_ITALICS .. '>>> %s' .. ANSI_RESET .. '\n', modname)
+    )
 
     for _, tc in pairs(testmod.testcases) do
         testmod.before_each()
         local testcase_ok, errmsg = pcall(tc.fn)
         local status = testcase_ok and (ANSI_GREEN .. ' OK ' .. ANSI_RESET)
             or (ANSI_RED .. 'FAIL' .. ANSI_RESET)
-        io.write(string.format("[ %s ] %s\n", status, tc.desc))
+        io.write(string.format('[ %s ] %s\n', status, tc.desc))
         io.flush()
 
         if not testcase_ok then
@@ -129,7 +135,7 @@ vim.api.nvim_create_user_command('RunTests', function(opts)
     end
 
     if module_count ~= nil then
-        io.write(string.format("All %d tests passed\n", passed_count))
+        io.write(string.format('All %d tests passed\n', passed_count))
         io.flush()
     end
 
@@ -159,7 +165,7 @@ end
 ---@param expected any[]
 ---@param actual any[]
 function M.assert_eql_tables(expected, actual)
-    for i,_ in ipairs(expected) do
+    for i, _ in ipairs(expected) do
         if expected[i] ~= actual[i] then
             local msg = failed_message()
             msg = msg .. string.format('Difference at index %d\n', i)
@@ -172,11 +178,13 @@ end
 ---@param expected_file string
 ---@param actual string[]
 function M.assert_eql_file(expected_file, actual)
-    local expected = vim.split(readfile(expected_file), '\n', {trimempty = true})
-    for i,_ in ipairs(expected) do
+    local expected =
+        vim.split(readfile(expected_file), '\n', { trimempty = true })
+    for i, _ in ipairs(expected) do
         if expected[i] ~= actual[i] then
             local msg = failed_message()
-            msg = msg .. string.format('Difference at %s:%d\n', expected_file, i)
+            msg = msg
+                .. string.format('Difference at %s:%d\n', expected_file, i)
             msg = msg .. getdiff(expected[i], actual[i])
             error(msg)
         end
