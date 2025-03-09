@@ -85,14 +85,14 @@ local function getdiff(expected, actual)
            "Actual:    " .. string_color_diff(actual_s, expected_s) .. "\n"
 end
 
----@return boolean
+---@return integer?
 function M.run_test(testfile)
     local modpath = testfile:gsub('/', '.'):gsub('.lua$', '')
     local ok, testmod = pcall(require, modpath)
     if not ok then
         io.write('Error loading test module: ' .. tostring(testmod) .. '\n')
         io.flush()
-        return false
+        return nil
     end
     local modname = modpath:gsub("tests.", '')
     io.write(string.format(ANSI_ITALICS .. ">>> %s" .. ANSI_RESET .. "\n", modname))
@@ -108,20 +108,31 @@ function M.run_test(testfile)
         if not testcase_ok then
             io.write(errmsg .. '\n')
             io.flush()
-            return false
+            return nil
         end
     end
 
-    return true
+    return #testmod.testcases
 end
 
 vim.api.nvim_create_user_command('RunTests', function(opts)
     local targets = vim.split(opts.fargs[1], ' ')
+    local passed_count = 0
+    local module_count = nil
     for _, target in pairs(targets) do
-        if not M.run_test(target) then
+        module_count = M.run_test(target)
+        if module_count == nil then
             break
+        else
+            passed_count = passed_count + module_count
         end
     end
+
+    if module_count ~= nil then
+        io.write(string.format("All %d tests passed\n", passed_count))
+        io.flush()
+    end
+
     vim.cmd [[silent qa!]]
 end, { nargs = 1 })
 
