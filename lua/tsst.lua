@@ -1,13 +1,31 @@
 local M = {}
 
+---@class TsstModule
+---@field testcases TsstCase[]
+---@field before_each function
+
+---@class TsstCase
+---@field desc string
+---@field fn function
+
 -- Test modules should be imported from '.'
 vim.o.runtimepath = vim.o.runtimepath .. ',.'
 
 local ANSI_RED = string.char(27) .. '[91m'
 local ANSI_RED_BG = string.char(27) .. '[101m'
 local ANSI_GREEN = string.char(27) .. '[32m'
+local ANSI_YELLOW = string.char(27) .. '[93m'
 local ANSI_ITALICS = string.char(27) .. '[3m'
 local ANSI_RESET = string.char(27) .. '[0m'
+
+-- Note: A testcase will be successful as long as no failed assertions occur,
+-- it is not obligatory to return a TsstResult.
+---@enum TsstResult
+local TsstResult = {
+    OK = 'ok',
+    SKIP = 'skip',
+    FAIL = 'fail',
+}
 
 ---@param msg string|nil
 local function failed_message(msg)
@@ -89,7 +107,9 @@ local function getdiff(expected, actual)
         .. '\n'
 end
 
----@return integer?
+-- Returns the total and skipped number of testcases, nil if at least one
+-- case failed.
+---@return integer?, integer?
 function M.run_test(testfile)
     local modpath = testfile:gsub('/', '.'):gsub('.lua$', '')
     local ok, testmod = pcall(require, modpath)
@@ -103,39 +123,59 @@ function M.run_test(testfile)
         string.format(ANSI_ITALICS .. '>>> %s' .. ANSI_RESET .. '\n', modname)
     )
 
+    local skipped_cases = 0
     for _, tc in pairs(testmod.testcases) do
         testmod.before_each()
-        local testcase_ok, errmsg = pcall(tc.fn)
-        local status = testcase_ok and (ANSI_GREEN .. ' OK ' .. ANSI_RESET)
-            or (ANSI_RED .. 'FAIL' .. ANSI_RESET)
+        local testcase_ok, r = pcall(tc.fn)
+        local status
+        if r == TsstResult.SKIP then
+            status = ANSI_YELLOW .. 'SKIP' .. ANSI_RESET
+            skipped_cases = skipped_cases + 1
+        elseif testcase_ok then
+            status = ANSI_GREEN .. ' OK ' .. ANSI_RESET
+        else
+            status = ANSI_RED .. 'FAIL' .. ANSI_RESET
+        end
+
         io.write(string.format('[ %s ] %s\n', status, tc.desc))
         io.flush()
 
         if not testcase_ok then
-            io.write(errmsg .. '\n')
+            io.write(r .. '\n')
             io.flush()
             return nil
         end
     end
 
-    return #testmod.testcases
+    return #testmod.testcases, skipped_cases
 end
 
 vim.api.nvim_create_user_command('RunTests', function(opts)
     local targets = vim.split(opts.fargs[1], ' ')
-    local passed_count = 0
-    local module_count = nil
+    local total_test_cases = 0
+    local passed_test_cases = 0
+    local module_total, module_skipped
     for _, target in pairs(targets) do
-        module_count = M.run_test(target)
-        if module_count == nil then
+        module_total, module_skipped = M.run_test(target)
+        if module_total == nil then
             break
-        else
-            passed_count = passed_count + module_count
         end
+        total_test_cases = total_test_cases + module_total
+        passed_test_cases = passed_test_cases + module_total - module_skipped
     end
 
-    if module_count ~= nil then
-        io.write(string.format('All %d tests passed\n', passed_count))
+    if module_total ~= nil then
+        if total_test_cases == passed_test_cases then
+            io.write(string.format('Passed %d tests\n', passed_test_cases))
+        else
+            io.write(
+                string.format(
+                    'Passed %d tests (skipped=%d)\n',
+                    passed_test_cases,
+                    total_test_cases - passed_test_cases
+                )
+            )
+        end
         io.flush()
     end
 
@@ -143,6 +183,11 @@ vim.api.nvim_create_user_command('RunTests', function(opts)
 end, { nargs = 1 })
 
 -- Test utilities --------------------------------------------------------------
+
+-- Skip the current test
+function M.skip()
+    return TsstResult.SKIP
+end
 
 function M.rm_f(filepath)
     local _, err, errno = vim.uv.fs_unlink(filepath)
