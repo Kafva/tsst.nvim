@@ -1,6 +1,3 @@
-# vi: ft=gitignore
-
-# General
 **/bin/**
 **/obj/**
 dist
@@ -13,88 +10,7 @@ build
 *.core
 *.orig
 *.rej
-tags
-
-# LaTeX
-*.aux
-*.bcf
-*.toc
-*.log
-*.run.xml
-main.pdf
-output/main.pdf
-output/main.bbl
-output/main.blg
-
-# C/C++
-.ccls-cache
-compile_commands.json
-
-# Android
-kls_database.db
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-
-# Rust
-**/target/**
-
-# Ruby
-.yardoc
-
-# Python
-.pytest-cache
-*.pyc
-__pycache__
-venv
-
-# Haskell
-dist-newstyle
-*.hi
-
-# Zig
-zig-cache
-zig-out
-
-# Xcode
-Pods
-*.xcodeproj
-xcuserdata
-DerivedData
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-Package.resolved
-.build
-
-# macOS
-Music Library.musiclibrary
-Media.localized
+.tags
 .localized
-*.dSYM
-
-# JS
-node_modules
-
-# C#
-*.app
-*.wsp
-*.nupkg
-**/pkg/**
-**/pkgobj/**
-
-# SonarQube
-.scannerwork/
-sonar-project.properties
-
-# Mozilla
-.web-extension-id
-web-ext-artifacts
+.DS_Store
+_DS_Store
