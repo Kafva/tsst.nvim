@@ -11,6 +11,7 @@ local M = {}
 -- Test modules should be imported from '.'
 vim.o.runtimepath = vim.o.runtimepath .. ',.'
 
+local ANSI_GREY = string.char(27) .. '[90m'
 local ANSI_RED = string.char(27) .. '[91m'
 local ANSI_RED_BG = string.char(27) .. '[101m'
 local ANSI_GREEN = string.char(27) .. '[32m'
@@ -85,7 +86,12 @@ local function string_color_diff(toprint, tocompare)
                 msg = msg .. ANSI_RED .. char .. ANSI_RESET
             end
         else
-            msg = msg .. char
+            if char == ' ' then
+                -- Highlight blankspaces
+                msg = msg .. ANSI_GREY .. "." .. ANSI_RESET
+            else
+                msg = msg .. char
+            end
         end
         ::continue::
     end
