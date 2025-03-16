@@ -82,13 +82,16 @@ local function string_color_diff(toprint, tocompare)
         if i <= #tocompare and char ~= tocompare:sub(i, i) then
             if char == ' ' then
                 msg = msg .. ANSI_RED_BG .. char .. ANSI_RESET
+            elseif char == '\t' then
+                msg = msg .. ANSI_RED_BG .. '~' .. ANSI_RESET
             else
                 msg = msg .. ANSI_RED .. char .. ANSI_RESET
             end
         else
             if char == ' ' then
-                -- Highlight blankspaces
-                msg = msg .. ANSI_GREY .. "." .. ANSI_RESET
+                msg = msg .. ANSI_GREY .. '.' .. ANSI_RESET
+            elseif char == '\t' then
+                msg = msg .. ANSI_GREY .. '~' .. ANSI_RESET
             else
                 msg = msg .. char
             end
