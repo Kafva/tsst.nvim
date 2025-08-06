@@ -67,6 +67,17 @@ local function readfile(filepath)
     return content
 end
 
+---@param msg string
+local function log(msg)
+    if vim.env.SINGLE_LINE_COLS ~= nil then
+        local cols = tonumber(vim.env.SINGLE_LINE_COLS)
+        io.write('\r' .. string.rep(' ', cols))
+        io.write('\r' .. msg)
+    else
+        io.write(msg .. '\n')
+    end
+end
+
 ---@param toprint string
 ---@param tocompare string
 ---@return string
@@ -146,7 +157,7 @@ function M.run_test(testfile)
             status = ANSI_RED .. 'FAIL' .. ANSI_RESET
         end
 
-        io.write(string.format('[ %s ] %s\n', status, tc.desc))
+        log(string.format('[ %s ] %s', status, tc.desc))
         io.flush()
 
         if not testcase_ok then
@@ -156,14 +167,28 @@ function M.run_test(testfile)
         end
     end
 
+    -- Print output of next module on a new line
+    if vim.env.SINGLE_LINE_COLS ~= nil then
+        io.write '\n'
+    end
+
     return #testmod.testcases, skipped_cases
 end
 
 vim.api.nvim_create_user_command('RunTests', function(opts)
-    local targets = vim.split(opts.fargs[1], ' ')
+    local targets
     local total_test_cases = 0
     local passed_test_cases = 0
     local module_total, module_skipped
+
+    if #opts.fargs == 0 then
+        -- Default to all `tests/_test.lua` files
+        local glob_out = vim.fn.glob 'tests/*_test.lua'
+        targets = vim.split(glob_out, '\n', { trimempty = true })
+    else
+        targets = vim.split(opts.fargs[1], ' ')
+    end
+
     for _, target in pairs(targets) do
         module_total, module_skipped = M.run_test(target)
         if module_total == nil then
@@ -189,7 +214,7 @@ vim.api.nvim_create_user_command('RunTests', function(opts)
     end
 
     vim.cmd [[silent qa!]]
-end, { nargs = 1 })
+end, { nargs = '?' })
 
 -- Test utilities --------------------------------------------------------------
 

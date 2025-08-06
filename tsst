@@ -9,6 +9,7 @@ Usage: $(basename $0) [OPTIONS] [test modules]
 
 OPTIONS:
     -d       Debug tests
+    -s       Output on single line
     -h       Show this help message
 EOF
     exit 1
@@ -17,9 +18,10 @@ EOF
 CURDIR=$(cd "$(dirname $0)" && pwd)
 DEBUG=false
 
-while getopts ":d" opt; do
+while getopts ":ds" opt; do
     case $opt in
     d) DEBUG=true ;;
+    s) export SINGLE_LINE_COLS=$(tput cols) ;;
     *) usage ;;
     esac
 done

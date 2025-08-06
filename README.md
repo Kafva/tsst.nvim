@@ -1,8 +1,8 @@
 # tsst.nvim
 Basic framework for testing Neovim plugins.
 
-Projects that use tsst should define test modules under `./tests/` and have a
-copy of tsst.nvim in the same directory, e.g.
+Projects that use tsst should define test modules in `./tests/*_test.lua` and
+have a copy of tsst.nvim in the same directory, e.g.
 ```
 tests
 ├── foo_test.lua
