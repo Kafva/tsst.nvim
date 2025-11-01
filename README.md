@@ -42,4 +42,4 @@ To run a specific module and debug failures:
 tests/tsst.nvim/tsst -d tests/foo_test.lua
 ```
 
-See [brk.nvim](https://github.com/Kafva/brk.nvim) and [refmt.nvim](https://github.com/Kafva/refmt.nvim) for more in depth examples.
+See [brk.nvim](https://codeberg.org/Kafva/brk.nvim) and [refmt.nvim](https://codeberg.org/Kafva/refmt.nvim) for more in depth examples.
